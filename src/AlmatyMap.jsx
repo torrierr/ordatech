@@ -1,85 +1,48 @@
 "use client";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import { useEffect, useState } from "react";
 import { supabase } from "./lib/lib/supabase";
 
-const center = {
-  lat: 43.238949,
-  lng: 76.889709,
-};
+// Исправление иконки маркера (Leaflet иногда теряет пути к картинкам в Next.js)
+const icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
-const containerStyle = {
-  width: "100%",
-  height: "80vh",
-};
-
-const getIcon = (type) => {
-  switch (type) {
-    case "mini":
-      return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
-    case "standard":
-      return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
-    case "pro":
-      return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
-    default:
-      return null;
-  }
-};
+const center = [43.238949, 76.889709]; // Координаты Алматы
 
 export default function AlmatyMap() {
-  const [boxes, setBoxes] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [points, setPoints] = useState([]);
 
   useEffect(() => {
-    fetchBoxes();
-
-    const channel = supabase
-      .channel("realtime eco_boxes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "eco_boxes" },
-        () => fetchBoxes()
-      )
-      .subscribe();
-
-    return () => supabase.removeChannel(channel);
+    async function fetchPoints() {
+      const { data, error } = await supabase.from("locations").select("*");
+      if (!error && data) setPoints(data);
+    }
+    fetchPoints();
   }, []);
 
-  const fetchBoxes = async () => {
-    const { data } = await supabase.from("eco_boxes").select("*");
-    setBoxes(data || []);
-  };
-
-  const filtered =
-    filter === "all"
-      ? boxes
-      : boxes.filter((box) => box.type === filter);
-
   return (
-    <div>
-      <div style={{ textAlign: "center", padding: 10 }}>
-        <button onClick={() => setFilter("all")}>Все</button>
-        <button onClick={() => setFilter("mini")}>Mini</button>
-        <button onClick={() => setFilter("standard")}>Standard</button>
-        <button onClick={() => setFilter("pro")}>Pro</button>
-      </div>
-
-      <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_KEY">
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={12}
-        >
-          {filtered.map((box) => (
-            <Marker
-              key={box.id}
-              position={{ lat: box.lat, lng: box.lng }}
-              icon={getIcon(box.type)}
-              title={box.name}
-            />
-          ))}
-        </GoogleMap>
-      </LoadScript>
+    <div style={{ height: "500px", width: "100%", borderRadius: "12px", overflow: "hidden" }}>
+      <MapContainer center={center} zoom={12} style={{ height: "100%", width: "100%" }}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {points.map((point) => (
+          <Marker key={point.id} position={[point.lat, point.lng]} icon={icon}>
+            <Popup>
+              <strong>{point.name}</strong> <br />
+              {point.description || "Эко-точка"}
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
     </div>
   );
 }
