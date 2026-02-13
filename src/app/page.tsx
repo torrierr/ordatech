@@ -1,7 +1,7 @@
 import AlmatyMap from "./components/AlmatyMap";
 import CityStats from "./components/CityStats";
 
-function App() {
+export default function Page() {
   return (
     <div>
       <h1 style={{ textAlign: "center" }}>EcoSmart Almaty</h1>
@@ -10,5 +10,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
