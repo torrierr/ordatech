@@ -1,10 +1,10 @@
-import AlmatyMap from "./components/AlmatyMap";
-import CityStats from "./components/CityStats";
+import AlmatyMap from "../AlmatyMap";
+import CityStats from "../CityStats";
 
 export default function Page() {
   return (
     <div>
-      <h1 style={{ textAlign: "center" }}>EcoSmart Almaty</h1>
+      <h1 style={{ textAlign: "center", marginTop: "20px" }}>EcoSmart Almaty</h1>
       <AlmatyMap />
       <CityStats />
     </div>
