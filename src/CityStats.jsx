@@ -1,5 +1,6 @@
+"use client";
 import { useEffect, useState } from "react";
-import { supabase } from "../supabase";
+import { supabase } from "./lib/lib/supabase";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,

@@ -1,6 +1,7 @@
+"use client";
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
-import { supabase } from "../supabase";
+import { supabase } from "./lib/lib/supabase";
 
 const center = {
   lat: 43.238949,
